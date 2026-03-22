@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoloSync - Savings Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --primary-color: #10b981;
+            --primary-hover: #059669;
+            --secondary-bg: #334155;
+            --secondary-hover: #475569;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --red-cancel: #ef4444;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            --transition-speed: 0.2s;
+        }
+
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6ee7b7, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--surface-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Balance Section */
+        .balance-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .balance-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .total-balance {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .motivational-msg {
+            font-size: 0.95rem;
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* Goal Container */
+        .goal-container {
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding: 0 16px;
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .goal-header button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0;
+            outline: none;
+            transition: opacity 0.2s;
+        }
+
+        .goal-header button:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--bg-color);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s;
+            width: 0%;
+        }
+
+        /* Typography */
+        h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        p.description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* Forms & Inputs */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            outline: none;
+            transition: border-color var(--transition-speed);
+            appearance: none;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            pointer-events: none;
+            color: var(--text-muted);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color var(--transition-speed);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-bg);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .sync-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* History List */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 4px;
+            /* Hide scrollbar by default entirely, unless active */
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .history-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            border: 1px solid transparent;
+            animation: slideInFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .history-item:hover {
+            border-color: var(--border-color);
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .history-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .history-amount {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+        }
+
+        .history-amount.negative {
+            color: var(--red-cancel);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes slideInFade {
+            0% {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Alert Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background-color: #020617;
+            color: var(--text-main);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 24px 16px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">Action successful</div>
+
+    <div class="app-container">
+        <header>
+            <h1>KoloSync</h1>
+        </header>
+
+        <!-- Balance Card -->
+        <main>
+            <div class="card balance-card">
+                <p class="balance-subtitle">Total Savings</p>
+                <h2 class="total-balance" id="totalBalance">₦0.00</h2>
+                <div class="goal-container" id="goalContainer">
+                    <div class="goal-header">
+                        <span id="goalText">Target Goal: Not set</span>
+                        <button type="button" id="setGoalBtn">Set Goal</button>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" id="goalProgress"></div>
+                    </div>
+                </div>
+                <div class="motivational-msg" id="motivationalMessage">Keep saving!</div>
+            </div>
+
+            <!-- Transaction Card -->
+            <div class="card">
+                <h3>Make a Transaction</h3>
+                <form id="savingsForm">
+                    <div class="input-group">
+                        <label for="transactionType">Transaction Type</label>
+                        <div class="select-wrapper">
+                            <select id="transactionType">
+                                <option value="deposit">Deposit (Add to Kolo)</option>
+                                <option value="withdraw">Withdraw (Remove from Kolo)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="amount">Enter Amount (₦)</label>
+                        <input type="number" id="amount" placeholder="e.g. 1000" min="1" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <svg id="submitIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span id="submitText">Add Savings</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Sync Card -->
+            <div class="card">
+                <h3>Cloud Sync</h3>
+                <p class="description">Backup your savings data or transfer it to another device securely.</p>
+                <div class="sync-actions">
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export
+                    </button>
+                    <button id="importBtn" class="btn btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Import
+                    </button>
+                    <!-- Hidden file input -->
+                    <input type="file" id="fileInput" accept=".json" style="display: none;">
+                </div>
+            </div>
+
+            <!-- History Card -->
+            <div class="card">
+                <h3>Transaction History</h3>
+                <div id="historyList" class="history-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        Built for Financial Inclusion – 3MTT Showcase
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // DOM Elements
+        const totalBalanceEl = document.getElementById('totalBalance');
+        const motivationalMessageEl = document.getElementById('motivationalMessage');
+        const setGoalBtn = document.getElementById('setGoalBtn');
+        const goalText = document.getElementById('goalText');
+        const goalProgress = document.getElementById('goalProgress');
+        const savingsForm = document.getElementById('savingsForm');
+        const amountInput = document.getElementById('amount');
+        const transactionTypeInput = document.getElementById('transactionType');
+        const submitText = document.getElementById('submitText');
+        const submitIcon = document.getElementById('submitIcon');
+        const historyListEl = document.getElementById('historyList');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+        const toastEl = document.getElementById('toast');
+
+        // State
+        const STORAGE_KEY = 'koloSync_savings';
+        let savings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let savingGoal = parseFloat(localStorage.getItem('koloSync_goal')) || 0;
+
+        // Motivational Messages
+        const messages = [
+            "Keep saving! Every kobo counts.",
+            "Your future self says thank you!",
+            "A naira saved is a naira earned!",
+            "Financial freedom starts today!",
+            "Small steps lead to big wealth.",
+            "Consistency is the key to wealth.",
+            "Watch your Kolo grow!"
+        ];
+
+        // Format Currency (Naira)
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN'
+            }).format(amount);
+        };
+
+        // Format Date
+        const formatDate = (isoString) => {
+            const date = new Date(isoString);
+            return new Intl.DateTimeFormat('en-NG', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        };
+
+        // Show Toast Notification
+        const showToast = (message) => {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        };
+
+        // Set Goal Action
+        setGoalBtn.addEventListener('click', () => {
+            const currentGoal = savingGoal > 0 ? savingGoal : "";
+            const userInput = window.prompt("Enter your saving goal (₦). Leave blank to clear:", currentGoal);
+            
+            if (userInput !== null) {
+                const parsed = parseFloat(userInput);
+                if (!isNaN(parsed) && parsed > 0) {
+                    savingGoal = parsed;
+                    localStorage.setItem('koloSync_goal', savingGoal);
+                    renderApp();
+                    updateMotivationalMessage(true);
+                    showToast("Saving goal updated!");
+                } else if (userInput.trim() === "") {
+                    // Reset goal
+                    savingGoal = 0;
+                    localStorage.removeItem('koloSync_goal');
+                    renderApp();
+                    updateMotivationalMessage();
+                    showToast("Goal removed.");
+                } else {
+                    showToast("Invalid amount entered.");
+                }
+            }
+        });
+
+        // Update Motivational Message
+        const updateMotivationalMessage = (checkGoal = false) => {
+            const total = Math.max(0, savings.reduce((sum, item) => sum + item.amount, 0));
+            
+            let message = "";
+            let useRandom = true;
+
+            if (checkGoal && savingGoal > 0) {
+                const percentage = (total / savingGoal) * 100;
+                if (percentage >= 100) {
+                    message = "Congratulations! You reached your goal! 🎉";
+                    useRandom = false;
+                } else if (percentage >= 75) {
+                    message = "Almost there! Keep going strong! 💪";
+                    useRandom = false;
+                } else if (percentage >= 50) {
+                    message = "Halfway there! Great job! 🙌";
+                    useRandom = false;
+                } else if (percentage > 0) {
+                    message = "Great saving today! You're getting closer to your goal! 🚀";
+                    useRandom = false;
+                }
+            }
+
+            if (useRandom) {
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                message = messages[randomIndex];
+            }
+
+            motivationalMessageEl.textContent = message;
+            
+            // Re-trigger animation trick
+            motivationalMessageEl.style.animation = 'none';
+            motivationalMessageEl.offsetHeight; /* trigger reflow */
+            motivationalMessageEl.style.animation = null; 
+        };
+
+        // Update Button UI based on Transaction Type
+        transactionTypeInput.addEventListener('change', (e) => {
+            const type = e.target.value;
+            const btn = document.querySelector('#savingsForm .btn-primary');
+            if (type === 'withdraw') {
+                submitText.textContent = "Withdraw Funds";
+                submitIcon.innerHTML = '<line x1="5" y1="12" x2="19" y2="12"></line>';
+                btn.style.backgroundColor = 'var(--red-cancel)';
+                btn.style.boxShadow = '0 4px 14px 0 rgba(239, 68, 68, 0.39)';
+            } else {
+                submitText.textContent = "Add Savings";
+                submitIcon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+                btn.style.backgroundColor = 'var(--primary-color)';
+                btn.style.boxShadow = '0 4px 14px 0 rgba(16, 185, 129, 0.39)';
+            }
+        });
+
+        // Render UI
+        const renderApp = (isNewItemAdded = false) => {
+            // 1. Calculate & Render Total Balance
+            const total = savings.reduce((sum, item) => sum + item.amount, 0);
+            const absoluteTotal = Math.max(0, total);
+            totalBalanceEl.textContent = formatCurrency(absoluteTotal);
+
+            // 1b. Render Goal Progress
+            if (savingGoal > 0) {
+                goalText.textContent = `Target Goal: ${formatCurrency(savingGoal)}`;
+                const percentage = Math.min((absoluteTotal / savingGoal) * 100, 100);
+                goalProgress.style.width = `${percentage}%`;
+                
+                if (percentage >= 100) {
+                    goalProgress.style.backgroundColor = '#34d399'; // fully completed green
+                } else {
+                    goalProgress.style.backgroundColor = 'var(--primary-color)';
+                }
+            } else {
+                goalText.textContent = "Target Goal: Not set";
+                goalProgress.style.width = '0%';
+            }
+
+            // 2. Render History List
+            historyListEl.innerHTML = '';
+
+            if (savings.length === 0) {
+                historyListEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>No transaction history yet. Start your journey today!</p>
+                    </div>
+                `;
+            } else {
+                savings.forEach((item, index) => {
+                    const el = document.createElement('div');
+                    el.className = 'history-item';
+                    
+                    // Delay animation slightly for existing items
+                    // For newly added item, no delay for the first one so it appears snappy
+                    const delay = isNewItemAdded && index === 0 ? 0 : index * 0.05;
+                    el.style.animationDelay = `${delay}s`;
+
+                    const isDeposit = item.amount > 0;
+                    const amountClass = isDeposit ? '' : 'negative';
+                    const amountSign = isDeposit ? '+' : ''; // the formatCurrency already puts minus, wait no we use Math.abs
+                    const titleText = isDeposit ? 'Savings Deposit' : 'Withdrawal';
+
+                    el.innerHTML = `
+                        <div class="history-info">
+                            <span class="history-title">${titleText}</span>
+                            <span class="history-date">${formatDate(item.date)}</span>
+                        </div>
+                        <span class="history-amount ${amountClass}">${isDeposit ? '+' : '-'}${formatCurrency(Math.abs(item.amount))}</span>
+                    `;
+                    historyListEl.appendChild(el);
+                });
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savings));
+        };
+
+        // Handle Transaction
+        savingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const amountVal = parseFloat(amountInput.value);
+            const type = transactionTypeInput.value;
+
+            if (!amountVal || amountVal <= 0) {
+                showToast("Please enter a valid amount");
+                return;
+            }
+
+            const currentTotal = savings.reduce((sum, item) => sum + item.amount, 0);
+
+            if (type === 'withdraw' && amountVal > currentTotal) {
+                showToast("Insufficient savings to withdraw ₦" + amountVal);
+                return;
+            }
+
+            const finalAmount = type === 'withdraw' ? -Math.abs(amountVal) : Math.abs(amountVal);
+
+            const newEntry = {
+                id: Date.now().toString(),
+                amount: finalAmount,
+                date: new Date().toISOString()
+            };
+
+            // Add to top of the array
+            savings.unshift(newEntry);
+            
+            // Update UI
+            renderApp(true);
+            
+            if (type === 'withdraw') {
+                updateMotivationalMessage(); // just random
+                showToast("Withdrawal successful!");
+            } else {
+                updateMotivationalMessage(true); // check goal!
+                showToast("Savings added successfully!");
+            }
+            
+            // Reset form completely
+            savingsForm.reset();
+            amountInput.blur();
+            
+            // Reset button to default deposit state
+            const btn = document.querySelector('#savingsForm .btn-primary');
+            submitText.textContent = "Add Savings";
+            submitIcon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+            btn.style.backgroundColor = 'var(--primary-color)';
+            btn.style.boxShadow = '0 4px 14px 0 rgba(16, 185, 129, 0.39)';
+        });
+
+        // Handle Export
+        exportBtn.addEventListener('click', () => {
+            if (savings.length === 0) {
+                showToast("No data to export");
+                return;
+            }
+
+            const dataStr = JSON.stringify(savings, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kolosync_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Data exported securely");
+        });
+
+        // Handle Import Button Click (trigger hidden file input)
+        importBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle File Selection (Import logic)
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    // Basic validation to check if it's an array 
+                    if (!Array.isArray(importedData)) {
+                        throw new Error("Invalid format");
+                    }
+                    
+                    // Check first item structure if array not empty
+                    if(importedData.length > 0) {
+                        if (!importedData[0].hasOwnProperty('amount') || !importedData[0].hasOwnProperty('date')) {
+                            throw new Error("Invalid object structure");
+                        }
+                    }
+
+                    savings = importedData;
+                    renderApp();
+                    updateMotivationalMessage();
+                    showToast("Data imported successfully!");
+                    
+                } catch (error) {
+                    showToast("Error reading valid JSON KoloSync data");
+                    console.error("Import error:", error);
+                }
+                
+                // Reset file input
+                fileInput.value = '';
+            };
+            
+            reader.onerror = () => {
+                showToast("Error reading file");
+                fileInput.value = '';
+            };
+
+            reader.readAsText(file);
+        });
+
+        // Initialize App
+        renderApp();
+        updateMotivationalMessage();
+
+    </script>
+</body>
+</html>
